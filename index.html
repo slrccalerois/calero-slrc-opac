@@ -38,14 +38,26 @@ a{color:var(--green)}.hero{background:linear-gradient(120deg,#0f5143,#21836a);co
   <section class="grid" id="catalog" aria-label="Catalog results"></section>
   <details class="admin">
     <summary>Library staff tools — manage inventory</summary>
-    <p>Add or update catalog records, import a CSV spreadsheet, or export a backup. Public visitors can use the search above. For a public website, edits saved in this browser are not automatically shared with other visitors.</p>
-    <div class="notice"><strong>Important:</strong> This starter version stores changes in this browser only. Use the CSV export to back up edits. For shared, live updates across devices, connect the catalog to a database or a service such as Supabase/Firebase before using it as the official inventory.</div>
-    <div class="adminactions">
-      <button class="green" id="addBook">＋ Add book record</button>
-      <button class="outline" id="exportCsv">Export CSV backup</button>
-      <button class="outline" id="downloadTemplate">Download CSV template</button>
-      <label class="outline" style="display:inline-flex;align-items:center">Import CSV <input id="importCsv" type="file" accept=".csv,text/csv" style="display:none"></label>
-      <button class="danger" id="resetSample">Restore sample records</button>
+    <p>Sign in with the authorized librarian account to manage the shared catalog. Visitors can search and view records without signing in.</p>
+    <div class="notice" id="connectionNotice" role="status">Connecting to the shared catalog…</div>
+    <div id="loginPanel">
+      <div class="formgrid">
+        <div class="field"><label for="loginEmail">Librarian email</label><input id="loginEmail" type="email" autocomplete="username" required></div>
+        <div class="field"><label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" required></div>
+      </div>
+      <div class="adminactions"><button class="green" id="signIn" type="button">Sign in</button></div>
+      <div class="small" id="authMessage" role="status">Only the Supabase-authenticated librarian account granted access in librarian_access can edit records.</div>
+    </div>
+    <div id="staffPanel" class="hidden">
+      <p id="signedInAs" class="small"></p>
+      <div class="adminactions">
+        <button class="green" id="addBook">＋ Add book record</button>
+        <button class="outline" id="exportCsv">Export CSV</button>
+        <button class="outline" id="downloadTemplate">Download CSV template</button>
+        <label class="outline" style="display:inline-flex;align-items:center">Import CSV <input id="importCsv" type="file" accept=".csv,text/csv" style="display:none"></label>
+        <button class="outline" id="signOut" type="button">Sign out</button>
+      </div>
+      <div class="small">CSV import adds new records and updates records when a matching database ID is included. Export a backup before bulk changes.</div>
     </div>
     <div class="small">Suggested workflow: maintain one master spreadsheet, export it as CSV, then import it here. Never put student names, borrowing histories, or other private information in this public catalog.</div>
     <div id="editFormWrap" class="hidden">
@@ -60,8 +72,7 @@ a{color:var(--green)}.hero{background:linear-gradient(120deg,#0f5143,#21836a);co
           <div class="field"><label for="year">Publication year</label><input id="year" inputmode="numeric" placeholder="2025"></div>
           <div class="field"><label for="isbn">ISBN</label><input id="isbn"></div>
           <div class="field"><label for="pages">Pages</label><input id="pages" inputmode="numeric"></div>
-          <div class="field"><label for="ddc">DDC number</label><input id="ddc" placeholder="e.g. 510"></div>
-          <div class="field"><label for="authorCode">Author code / Cutter</label><input id="authorCode" placeholder="e.g. CLA"></div>
+          <div class="field"><label for="ddc">Call number (DDC / Cutter)</label><input id="ddc" placeholder="e.g. 510 CLA"></div>
           <div class="field"><label for="accession">Accession number(s)</label><input id="accession" placeholder="e.g. CIS-0001, CIS-0002"></div>
           <div class="field"><label for="copies">Number of copies</label><input id="copies" type="number" min="1" value="1"></div>
           <div class="field"><label for="status">Availability status</label><select id="status"><option>Available</option><option>For Library Use Only</option><option>On Loan</option><option>Under Processing</option></select></div>
@@ -75,30 +86,64 @@ a{color:var(--green)}.hero{background:linear-gradient(120deg,#0f5143,#21836a);co
 </main>
 <footer><strong>Calero Integrated School SLRC</strong><br>Online catalog for discovery and location of learning resources.<br><span id="footerCount"></span></footer>
 <div id="modalRoot"></div>
-<script>
-const STORAGE_KEY='caleroSLRC_OPAC_v1';
-const sampleBooks=[
-{id:'sample-1',title:'Exploring Life Through Science Series: General Chemistry 1',author:'Aristea V. Bayquen',subject:'Science',publisher:'Phoenix Publishing House Inc.',year:'2022',isbn:'978-971-06-5575-5',pages:'266',ddc:'540',authorCode:'BAY',accession:'SAMPLE-0001',copies:1,status:'Under Processing',shelf:'Science shelf',notes:'Second Edition. Sample record—replace accession details with the actual library inventory.'},
-{id:'sample-2',title:'Exploring Life Through Science Series: General Physics 1',author:'Angelina A. Silverio',subject:'Science',publisher:'Phoenix Publishing House Inc.',year:'2022',isbn:'978-971-06-5573-1',pages:'328',ddc:'530',authorCode:'SIL',accession:'SAMPLE-0002',copies:1,status:'Under Processing',shelf:'Science shelf',notes:'Second Edition. Sample record—replace accession details with the actual library inventory.'},
-{id:'sample-3',title:'Astronomy for Curious Minds',author:'Giles Sparrow',subject:'Astronomy',publisher:'Lampara Publishing House Inc.',year:'2025',isbn:'9786214747030',pages:'130',ddc:'520',authorCode:'SPA',accession:'SAMPLE-0003',copies:1,status:'Under Processing',shelf:'Science shelf',notes:'Sample record—replace accession details with the actual library inventory.'},
-{id:'sample-4',title:'Chemistry for Curious Minds',author:'Lynn Huggins-Cooper',subject:'Science',publisher:'Lampara Publishing House Inc.',year:'2025',isbn:'9786214747092',pages:'130',ddc:'540',authorCode:'HUG',accession:'SAMPLE-0004',copies:1,status:'Under Processing',shelf:'Science shelf',notes:'Sample record—replace accession details with the actual library inventory.'},
-{id:'sample-5',title:'Physics for Curious Minds',author:'Laura Baker',subject:'Science',publisher:'Lampara Publishing House Inc.',year:'2025',isbn:'9786214747085',pages:'130',ddc:'530',authorCode:'BAK',accession:'SAMPLE-0005',copies:1,status:'Under Processing',shelf:'Science shelf',notes:'Sample record—replace accession details with the actual library inventory.'},
-{id:'sample-6',title:'Earth Science for Curious Minds',author:'Author details to verify',subject:'Earth Science',publisher:'Lampara Publishing House Inc.',year:'2025',isbn:'',pages:'130',ddc:'550',authorCode:'',accession:'SAMPLE-0006',copies:1,status:'Under Processing',shelf:'Science shelf',notes:'Sample record—verify author, ISBN, and pages before official use.'}
-];
-let books=loadBooks();
-function loadBooks(){try{const x=localStorage.getItem(STORAGE_KEY);return x?JSON.parse(x):structuredClone(sampleBooks)}catch(e){return structuredClone(sampleBooks)}}
-function saveBooks(){localStorage.setItem(STORAGE_KEY,JSON.stringify(books))}
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+/* Setup: use your project's publishable key only. Never put a secret or service_role key in this file. */
+const SUPABASE_URL = 'https://bhlysjspbrgbuifvmdub.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_0ufXM5ft2tUL0GSpu2eMxw_Ex7r_dSG';
+const TABLE = 'books';
+const LIBRARIAN_TABLE = 'librarian_access';
+
+/* Adjust only these values if your SQL table uses different column names.
+   Left side = field names used by this HTML; right side = columns in Supabase. */
+const DB_COLUMNS = {
+  title:'title', author:'author', subject:'subject', publisher:'publisher',
+  year:'pubication_year', isbn:'isbn', pages:'pages', ddc:'call_number',
+  accession:'accession_number', copies:'copies',
+  status:'availability', shelf:'shelf_location', notes:'notes'
+};
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+let books = [], currentUser = null, isLibrarian = false, busy = false;
+const fields = ['title','author','subject','publisher','year','isbn','pages','ddc','accession','copies','status','shelf','notes'];
+const csvColumns = ['id',...fields];
+
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function statusClass(s){return s==='Available'?'available':s==='On Loan'?'loan':s==='Under Processing'?'processing':'reference'}
 function copyCount(b){return Math.max(0,Number(b.copies)||1)}
+function setNotice(message, error=false){const el=document.getElementById('connectionNotice');el.textContent=message;el.style.background=error?'#fff0f0':'#fff8e6';el.style.color=error?'#8a2525':'#664e1d'}
+function setAuthMessage(message){document.getElementById('authMessage').textContent=message}
+function fromDb(row){
+ const b={id:row.id};
+ for(const [field,col] of Object.entries(DB_COLUMNS)) b[field]=row[col]??'';
+ b.year=String(b.year??''); b.pages=String(b.pages??''); b.copies=Math.max(1,Number(b.copies)||1);
+ b.status=b.status||'Under Processing';
+ return b;
+}
+function toDb(b){
+ const row={};
+ for(const [field,col] of Object.entries(DB_COLUMNS)){
+   let value=b[field]??null;
+   if(field==='year'||field==='pages') value=value===''?null:(Number.isFinite(Number(value))?Number(value):null);
+   if(field==='copies') value=Math.max(1,Number(value)||1);
+   row[col]=value;
+ }
+ return row;
+}
+async function loadBooks(){
+ setNotice('Loading shared catalog…');
+ const {data,error}=await supabase.from(TABLE).select('*').order(DB_COLUMNS.title,{ascending:true});
+ if(error){books=[];render();setNotice('Could not load the catalog: '+error.message+' — check the table/column mapping and Supabase public SELECT policy.',true);return}
+ books=(data||[]).map(fromDb);render();setNotice('Connected to the shared Supabase catalog.');
+}
 function render(){
  const query=document.getElementById('search').value.trim().toLowerCase(),subject=document.getElementById('subjectFilter').value,status=document.getElementById('statusFilter').value,sort=document.getElementById('sortFilter').value;
- const subjects=[...new Set(books.map(b=>b.subject).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+ const subjects=[...new Set(books.map(b=>b.subject).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));
  const sel=document.getElementById('subjectFilter'),old=sel.value;
  sel.innerHTML='<option value="">All subjects</option>'+subjects.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
  if(subjects.includes(old))sel.value=old;
  let list=books.filter(b=>{const hay=[b.title,b.author,b.subject,b.publisher,b.isbn,b.ddc,b.authorCode,b.accession,b.shelf,b.notes,b.year].join(' ').toLowerCase();return (!query||hay.includes(query))&&(!subject||b.subject===subject)&&(!status||b.status===status)});
- list.sort((a,b)=>sort==='author'?(a.author||'').localeCompare(b.author||'')||a.title.localeCompare(b.title):sort==='ddc'?(parseFloat(a.ddc)||99999)-(parseFloat(b.ddc)||99999):sort==='newest'?(Number(b.year)||0)-(Number(a.year)||0):a.title.localeCompare(b.title));
+ list.sort((a,b)=>sort==='author'?(String(a.author||'').localeCompare(String(b.author||''))||String(a.title).localeCompare(String(b.title))):sort==='ddc'?(parseFloat(a.ddc)||99999)-(parseFloat(b.ddc)||99999):sort==='newest'?(Number(b.year)||0)-(Number(a.year)||0):String(a.title||'').localeCompare(String(b.title||'')));
  document.getElementById('totalTitles').textContent=books.length;
  document.getElementById('totalCopies').textContent=books.reduce((n,b)=>n+copyCount(b),0);
  document.getElementById('availableCopies').textContent=books.filter(b=>b.status==='Available').reduce((n,b)=>n+copyCount(b),0);
@@ -109,37 +154,89 @@ function render(){
  catalog.innerHTML=list.map(b=>`<article class="book">
  <div class="bookhead"><span class="tag ${statusClass(b.status)}">${esc(b.status||'Status not set')}</span><span class="small">${esc(b.year||'Year n/a')}</span></div>
  <h3>${esc(b.title)}</h3><div class="author">by ${esc(b.author||'Author not recorded')}</div>
- <div class="meta">
- <div><small>Subject</small><strong>${esc(b.subject||'Not assigned')}</strong></div>
- <div><small>DDC / Call no.</small><strong>${esc([b.ddc,b.authorCode,b.year].filter(Boolean).join(' ')||'Not assigned')}</strong></div>
- <div><small>Accession no.</small><strong>${esc(b.accession||'Not assigned')}</strong></div>
- <div><small>Copies</small><strong>${copyCount(b)}</strong></div>
- <div><small>Shelf location</small><strong>${esc(b.shelf||'Not recorded')}</strong></div>
- <div><small>ISBN</small><strong>${esc(b.isbn||'Not recorded')}</strong></div>
- </div>
+ <div class="meta"><div><small>Subject</small><strong>${esc(b.subject||'Not assigned')}</strong></div>
+ <div><small>Call number</small><strong>${esc([b.ddc,b.year].filter(Boolean).join(' ')||'Not assigned')}</strong></div>
+ <div><small>Accession no.</small><strong>${esc(b.accession||'Not assigned')}</strong></div><div><small>Copies</small><strong>${copyCount(b)}</strong></div>
+ <div><small>Shelf location</small><strong>${esc(b.shelf||'Not recorded')}</strong></div><div><small>ISBN</small><strong>${esc(b.isbn||'Not recorded')}</strong></div></div>
  <div class="author">${esc(b.publisher||'Publisher not recorded')}${b.pages?' · '+esc(b.pages)+' pages':''}</div>
  ${b.notes?`<div class="small">${esc(b.notes)}</div>`:''}
- <div class="bookfoot"><button class="soft" onclick="showDetails('${esc(b.id)}')">Full details</button><button class="outline staffEdit" onclick="editBook('${esc(b.id)}')">Edit record</button></div>
+ <div class="bookfoot"><button class="soft" onclick="showDetails('${esc(b.id)}')">Full details</button>
+ ${isLibrarian?`<button class="outline" onclick="editBook('${esc(b.id)}')">Edit record</button><button class="danger" onclick="deleteBook('${esc(b.id)}')">Delete</button>`:''}</div>
  </article>`).join('');
 }
-function showDetails(id){const b=books.find(x=>x.id===id);if(!b)return;document.getElementById('modalRoot').innerHTML=`<div class="modalback" onclick="if(event.target===this)this.innerHTML=''"><section class="modal"><h2>${esc(b.title)}</h2><p class="author">by ${esc(b.author||'Author not recorded')}</p><div class="modalgrid">${[['Subject',b.subject],['Publisher',b.publisher],['Year',b.year],['Edition / notes',b.notes],['ISBN',b.isbn],['Pages',b.pages],['DDC',b.ddc],['Author code',b.authorCode],['Accession number(s)',b.accession],['Copies',copyCount(b)],['Availability',b.status],['Shelf location',b.shelf]].map(([k,v])=>`<div><small class="small">${esc(k)}</small><div>${esc(v||'Not recorded')}</div></div>`).join('')}</div><div class="modalactions"><button class="green" onclick="document.getElementById('modalRoot').innerHTML=''">Close</button></div></section></div>`}
-function blankForm(){document.getElementById('bookForm').reset();document.getElementById('recordId').value='';document.getElementById('copies').value=1;document.getElementById('formTitle').textContent='Add a book';document.getElementById('editFormWrap').classList.remove('hidden')}
-function editBook(id){const b=books.find(x=>x.id===id);if(!b)return;blankForm();document.getElementById('formTitle').textContent='Edit book record';for(const k of ['id','title','author','subject','publisher','year','isbn','pages','ddc','authorCode','accession','copies','status','shelf','notes']){const el=document.getElementById(k==='id'?'recordId':k);if(el)el.value=b[k]??''}document.getElementById('editFormWrap').scrollIntoView({behavior:'smooth',block:'start'})}
+function showDetails(id){const b=books.find(x=>String(x.id)===String(id));if(!b)return;document.getElementById('modalRoot').innerHTML=`<div class="modalback" onclick="if(event.target===this)this.innerHTML=''"><section class="modal"><h2>${esc(b.title)}</h2><p class="author">by ${esc(b.author||'Author not recorded')}</p><div class="modalgrid">${[['Subject',b.subject],['Publisher',b.publisher],['Year',b.year],['Edition / notes',b.notes],['ISBN',b.isbn],['Pages',b.pages],['Call number',b.ddc],['Accession number(s)',b.accession],['Copies',copyCount(b)],['Availability',b.status],['Shelf location',b.shelf]].map(([k,v])=>`<div><small class="small">${esc(k)}</small><div>${esc(v||'Not recorded')}</div></div>`).join('')}</div><div class="modalactions"><button class="green" onclick="document.getElementById('modalRoot').innerHTML=''">Close</button></div></section></div>`}
+function blankForm(){if(!isLibrarian)return;document.getElementById('bookForm').reset();document.getElementById('recordId').value='';document.getElementById('copies').value=1;document.getElementById('formTitle').textContent='Add a book';document.getElementById('editFormWrap').classList.remove('hidden')}
+function editBook(id){if(!isLibrarian)return;const b=books.find(x=>String(x.id)===String(id));if(!b)return;blankForm();document.getElementById('formTitle').textContent='Edit book record';document.getElementById('recordId').value=b.id;for(const k of fields){const el=document.getElementById(k);if(el)el.value=b[k]??''}document.getElementById('editFormWrap').scrollIntoView({behavior:'smooth',block:'start'})}
+async function deleteBook(id){if(!isLibrarian||!confirm('Delete this catalog record from the shared catalog? This cannot be undone here.'))return;const {error}=await supabase.from(TABLE).delete().eq('id',id);if(error){alert('Delete failed: '+error.message);return}await loadBooks()}
+window.showDetails=showDetails;window.editBook=editBook;window.deleteBook=deleteBook;
 document.getElementById('searchForm').addEventListener('submit',e=>{e.preventDefault();render()});
 document.getElementById('clearSearch').addEventListener('click',()=>{document.getElementById('search').value='';document.getElementById('subjectFilter').value='';document.getElementById('statusFilter').value='';render()});
 ['search','subjectFilter','statusFilter','sortFilter'].forEach(id=>document.getElementById(id).addEventListener(id==='search'?'input':'change',render));
 document.getElementById('addBook').onclick=blankForm;document.getElementById('cancelEdit').onclick=()=>document.getElementById('editFormWrap').classList.add('hidden');
-document.getElementById('bookForm').addEventListener('submit',e=>{e.preventDefault();const id=document.getElementById('recordId').value||'book-'+Date.now();const b={id};for(const k of ['title','author','subject','publisher','year','isbn','pages','ddc','authorCode','accession','status','shelf','notes'])b[k]=document.getElementById(k).value.trim();b.copies=Math.max(1,Number(document.getElementById('copies').value)||1);const i=books.findIndex(x=>x.id===id);if(i>=0)books[i]=b;else books.push(b);saveBooks();document.getElementById('editFormWrap').classList.add('hidden');render();alert('Record saved in this browser. Export a CSV backup to keep your changes.');});
+document.getElementById('bookForm').addEventListener('submit',async e=>{
+ e.preventDefault();if(!isLibrarian)return;
+ const id=document.getElementById('recordId').value;const b={};
+ for(const k of fields)b[k]=document.getElementById(k).value.trim();
+ b.copies=Math.max(1,Number(document.getElementById('copies').value)||1);
+ const payload=toDb(b);let result;
+ if(id) result=await supabase.from(TABLE).update(payload).eq('id',id);
+ else result=await supabase.from(TABLE).insert(payload);
+ if(result.error){alert('Could not save record: '+result.error.message+'\\nCheck the database column mapping and librarian UPDATE/INSERT policies.');return}
+ document.getElementById('editFormWrap').classList.add('hidden');await loadBooks();alert('Record saved to the shared catalog.');
+});
 function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
-const columns=['title','author','subject','publisher','year','isbn','pages','ddc','authorCode','accession','copies','status','shelf','notes'];
-function toCsv(rows){return [columns.join(','),...rows.map(b=>columns.map(k=>csvCell(b[k])).join(','))].join('\r\n')}
-function download(name,content,type='text/csv;charset=utf-8'){const blob=new Blob(['\ufeff'+content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)}
-document.getElementById('exportCsv').onclick=()=>download('calero-slrc-catalog-backup.csv',toCsv(books));
-document.getElementById('downloadTemplate').onclick=()=>download('calero-slrc-import-template.csv',toCsv([{title:'Example title',author:'Author name',subject:'Science',publisher:'Publisher',year:'2025',isbn:'',pages:'100',ddc:'500',authorCode:'AUT',accession:'CIS-0001',copies:1,status:'Under Processing',shelf:'Science shelf',notes:'Replace this example with a real record'}]));
+function toCsv(rows){return [csvColumns.join(','),...rows.map(b=>csvColumns.map(k=>csvCell(b[k])).join(','))].join('\r\n')}
+function download(name,content,type='text/csv;charset=utf-8'){const blob=new Blob(['\ufeff'+content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+document.getElementById('exportCsv').onclick=()=>{if(isLibrarian)download('calero-slrc-catalog-backup.csv',toCsv(books))};
+document.getElementById('downloadTemplate').onclick=()=>download('calero-slrc-import-template.csv',toCsv([{id:'',title:'Example title',author:'Author name',subject:'Science',publisher:'Publisher',year:'2025',isbn:'',pages:'100',ddc:'500 AUT',accession:'CIS-0001',copies:1,status:'Under Processing',shelf:'Science shelf',notes:'Replace this example with a real record'}]));
 function parseCsv(text){let rows=[],row=[],cell='',quoted=false;for(let i=0;i<text.length;i++){let c=text[i];if(quoted){if(c==='"'&&text[i+1]==='"'){cell+='"';i++}else if(c==='"')quoted=false;else cell+=c}else{if(c==='"')quoted=true;else if(c===','){row.push(cell);cell=''}else if(c==='\n'){row.push(cell.replace(/\r$/,''));rows.push(row);row=[];cell=''}else cell+=c}}if(cell.length||row.length){row.push(cell.replace(/\r$/,''));rows.push(row)}return rows}
-document.getElementById('importCsv').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const rows=parseCsv(await file.text());if(rows.length<2)throw Error('CSV has no data rows');const heads=rows.shift().map(h=>h.trim());const imported=rows.filter(r=>r.some(v=>v.trim())).map((r,i)=>{const b={id:'import-'+Date.now()+'-'+i};heads.forEach((h,j)=>{const key=({'author code':'authorCode','author_code':'authorCode','call number':'ddc','availability':'status','accession number':'accession','shelf location':'shelf'}[h.toLowerCase()]||h);if(columns.includes(key))b[key]=(r[j]||'').trim()});b.title=b.title||'Untitled record';b.copies=Math.max(1,Number(b.copies)||1);b.status=b.status||'Under Processing';return b});if(!confirm(`Import ${imported.length} records? Choose OK to replace the current catalog, or Cancel to keep it unchanged.`))return;books=imported;saveBooks();render();alert('CSV imported. Check the records and export a backup.')}catch(err){alert('Could not import this CSV: '+err.message)}finally{e.target.value=''}});
-document.getElementById('resetSample').onclick=()=>{if(confirm('Replace this browser catalog with the sample records? Export a backup first if you need your current data.')){books=structuredClone(sampleBooks);saveBooks();render()}};
-render();
+document.getElementById('importCsv').addEventListener('change',async e=>{
+ const file=e.target.files[0];if(!file)return;if(!isLibrarian){alert('Sign in as librarian first.');e.target.value='';return}
+ try{
+  const rows=parseCsv(await file.text());if(rows.length<2)throw Error('CSV has no data rows');
+  const heads=rows.shift().map(h=>h.trim().replace(/^\ufeff/,''));
+  const aliases={'pubication_year':'year','publication year':'year','author code':'ddc','author_code':'ddc','call number':'ddc','call_number':'ddc','ddc number':'ddc','ddc_number':'ddc','availability':'status','accession number':'accession','accession_number':'accession','shelf location':'shelf','shelf_location':'shelf','publication_year':'year','pubication_year':'year'};
+  const imported=rows.filter(r=>r.some(v=>v.trim())).map(r=>{const b={};heads.forEach((h,j)=>{let key=aliases[h.toLowerCase()]||h;if(csvColumns.includes(key))b[key]=(r[j]||'').trim()});if(!b.title)throw Error('Every imported row must have a title.');b.copies=Math.max(1,Number(b.copies)||1);b.status=b.status||'Under Processing';return b});
+  if(!imported.length)throw Error('No non-empty records found.');
+  if(!confirm(`Import ${imported.length} records into the shared catalog? Rows with an ID will update that record; rows without an ID will be added. Existing records not in the file will not be deleted.`))return;
+  for(const b of imported){
+    const id=b.id;delete b.id;const payload=toDb(b);
+    const result=id?await supabase.from(TABLE).update(payload).eq('id',id):await supabase.from(TABLE).insert(payload);
+    if(result.error)throw Error(result.error.message);
+  }
+  await loadBooks();alert(`Imported ${imported.length} records.`);
+ }catch(err){alert('CSV import stopped: '+err.message+'\\nSome earlier rows may already have been saved. Export a backup and review the catalog.')}finally{e.target.value=''}
+});
+document.getElementById('signIn').onclick=async()=>{
+ const email=document.getElementById('loginEmail').value.trim(),password=document.getElementById('loginPassword').value;
+ if(!email||!password){setAuthMessage('Enter your librarian email and password.');return}
+ const {error}=await supabase.auth.signInWithPassword({email,password});
+ if(error){setAuthMessage('Sign-in failed: '+error.message);return}
+ await checkSession();
+};
+document.getElementById('signOut').onclick=async()=>{await supabase.auth.signOut();currentUser=null;isLibrarian=false;updateAuthUI();render();setAuthMessage('You are signed out.')};
+async function checkSession(){
+ const {data:{session}}=await supabase.auth.getSession();currentUser=session?.user||null;isLibrarian=false;
+ if(currentUser){
+  const {data,error}=await supabase.from(LIBRARIAN_TABLE).select('*').eq('user_id',currentUser.id).maybeSingle();
+  if(error){setAuthMessage('Signed in, but librarian permission could not be verified: '+error.message);await supabase.auth.signOut();currentUser=null}
+  else if(!data){setAuthMessage('This account is not listed as a librarian. No editing access was granted.');await supabase.auth.signOut();currentUser=null}
+  else {isLibrarian=true;setAuthMessage('Librarian access verified.');}
+ }
+ updateAuthUI();render();
+}
+function updateAuthUI(){
+ document.getElementById('loginPanel').classList.toggle('hidden',isLibrarian);
+ document.getElementById('staffPanel').classList.toggle('hidden',!isLibrarian);
+ document.getElementById('signedInAs').textContent=isLibrarian?`Signed in as ${currentUser.email} — librarian access verified.`:'';
+ document.getElementById('addBook').disabled=!isLibrarian;
+ document.getElementById('exportCsv').disabled=!isLibrarian;
+ document.getElementById('importCsv').disabled=!isLibrarian;
+}
+supabase.auth.onAuthStateChange(()=>{setTimeout(()=>checkSession(),0)});
+updateAuthUI();
+if(SUPABASE_PUBLISHABLE_KEY.includes('PASTE_YOUR'))setNotice('Setup needed: add your Supabase publishable key in the script before publishing.',true);
+else {await loadBooks();await checkSession();}
 </script>
 </body>
 </html>
