@@ -212,7 +212,7 @@ document.getElementById('importCsv').addEventListener('change',async e=>{
  const file=e.target.files[0];if(!file)return;if(!isLibrarian){alert('Sign in as librarian first.');e.target.value='';return}
  try{
   const rows=parseCsv(await file.text());if(rows.length<2)throw Error('CSV has no data rows');
-  const heads=rows.shift().map(h=>h.trim().replace(/^\ufeff/,''));
+  const heads=rows.shift().map(h=>h.trim().replace(/^\ufeff/,''));console.log('CSV headers:', heads);
   const aliases={'pubication_year':'year','publication year':'year','author code':'ddc','author_code':'ddc','call number':'ddc','call_number':'ddc','ddc number':'ddc','ddc_number':'ddc','availability':'status','accession number':'accession','accession_number':'accession','shelf location':'shelf','shelf_location':'shelf','publication_year':'year','pubication_year':'year'};
   const imported=rows.filter(r=>r.some(v=>v.trim())).map(r=>{const b={};heads.forEach((h,j)=>{let key=aliases[h.toLowerCase()]||h;if(csvColumns.includes(key))b[key]=(r[j]||'').trim()});if(!b.title)throw Error('Every imported row must have a title.');b.copies=Math.max(1,Number(b.copies)||1);b.status=b.status||'Under Processing';return b});
   if(!imported.length)throw Error('No non-empty records found.');
