@@ -189,6 +189,7 @@ left:-70px;
   margin-left:-30px;
 }
 
+
 /* MOBILE PHONE LAYOUT */
 @media screen and (max-width: 600px) {
 
@@ -232,44 +233,63 @@ left:-70px;
     height: 52px;
   }
 
+  /* SCHOOL NAME */
   .hero h1 {
-  font-size:20px;
-  line-height:1.1;
-  margin:0 0 3px 0;
-  white-space:nowrap;
-}
+    font-size: 13px;
+    line-height: 1.2;
+    margin: 0 0 3px 0;
+    white-space: nowrap;
+  }
 
-.hero .eyebrow {
-  font-size:12px;
-  line-height:1.2;
-  margin-left:0;
-  white-space:nowrap;
-}
+  /* SLRC SUBTITLE */
+  .hero .eyebrow {
+    font-size: 8px;
+    line-height: 1.2;
+    margin-left: 0;
+    white-space: nowrap;
+  }
 
-.hero-title {
-  margin-left:0;
-  margin-top:22px;
-}
+  /* DISCOVER. EXPLORE. LEARN. */
+  .hero-title {
+    margin-left: 0;
+    margin-top: 22px;
+  }
 
-.hero p {
-  font-size:17px;
-  line-height:1.35;
-  margin:18px 0 0;
-  transform:none;
-  width:100%;
-}
+  .hero .title-white,
+  .hero .title-explore {
+    font-size: 36px;
+    line-height: 1.1;
+    top: 0;
+    left: 0;
+  }
 
-.searchbox input {
-  flex:1 1 100%;
-  min-width:0;
-  font-size:16px;
-}
+  /* DESCRIPTION */
+  .hero p {
+    font-size: 15px;
+    line-height: 1.35;
+    margin: 18px 0 0;
+    transform: none;
+    width: 100%;
+  }
+
+  /* SEARCH BOX */
+  .hero .searchbox {
+    width: 100%;
+    max-width: 100%;
+    margin: 8px 0 0;
+    box-sizing: border-box;
+    flex-wrap: wrap;
+  }
+
+  .searchbox input {
+    flex: 1 1 100%;
+    min-width: 0;
+    font-size: 16px;
+  }
 
   .searchbox button {
     flex: 1;
-  }.hero .searchbox {
-  margin-top:8px;
-}
+  }
 
 }
 </style>
