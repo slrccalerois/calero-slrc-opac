@@ -188,6 +188,100 @@ left:-70px;
 .hero-title{
   margin-left:-30px;
 }
+
+/* MOBILE PHONE LAYOUT */
+@media screen and (max-width: 600px) {
+
+  .hero {
+    height: auto;
+    min-height: 0;
+    padding: 28px 16px 35px;
+    background: url("library-background.png") center center / cover no-repeat;
+    overflow: hidden;
+  }
+
+  .hero .wrap {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .topline {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .topline > div:last-child {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .logo {
+    width: 55px;
+    height: 55px;
+    flex: 0 0 55px;
+    padding: 2px;
+    transform: none;
+    overflow: visible;
+  }
+
+  .logo::after {
+    right: -9px;
+    top: 2px;
+    height: 52px;
+  }
+
+  .hero h1 {
+    font-size: 27px;
+    line-height: 1.1;
+    margin: 0 0 3px 0;
+  }
+
+  .hero .eyebrow {
+    font-size: 17px;
+    line-height: 1.2;
+    margin-left: 0;
+  }
+
+  .hero-title {
+    margin-left: 0;
+  }
+
+  .hero .title-white,
+  .hero .title-explore {
+    font-size: 36px;
+    line-height: 1.1;
+    top: 0;
+    left: 0;
+  }
+
+  .hero p {
+    font-size: 18px;
+    line-height: 1.35;
+    margin: 22px 0 0;
+    transform: none;
+    width: 100%;
+  }
+
+  .searchbox {
+    width: 100%;
+    max-width: 100%;
+    margin: 22px 0 0;
+    box-sizing: border-box;
+    flex-wrap: wrap;
+  }
+
+  .searchbox input {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .searchbox button {
+    flex: 1;
+  }
+
+}
 </style>
 </head>
 <body>
