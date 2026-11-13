@@ -191,6 +191,27 @@ left:-70px;
 }
 
 
+
+/* RESEARCH COLLECTION */
+.collection-nav{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 22px}
+.collection-nav button{background:#eaf2fc;color:#244F7D;border:1px solid #d5e3f3}
+.collection-nav button.active{background:#244F7D;color:#fff;border-color:#244F7D}
+.research-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:20px 0 12px}
+.research-toolbar h2{margin:0;font-size:21px}
+.research-filters{display:flex;gap:8px;flex-wrap:wrap}
+.research-filters input,.research-filters select{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 11px;color:var(--ink);max-width:100%}
+.research-admin{margin:18px 0;background:#f1f7fc;border:1px solid #d5e3f3;border-radius:16px;padding:17px}
+.research-admin h3{margin:0 0 10px;color:#244F7D}
+.research-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:17px;box-shadow:0 3px 12px rgba(28,70,54,.035);display:flex;flex-direction:column;gap:9px;min-width:0}
+.research-card h3{margin:0;font-size:17px;line-height:1.3;overflow-wrap:anywhere}
+.research-type-tag{display:inline-flex;align-items:center;padding:4px 9px;border-radius:999px;background:#eaf2fc;color:#244F7D;font-size:11px;font-weight:750;width:max-content}
+.research-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:9px;border-top:1px solid #edf2ee}
+.research-meta small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.06em}
+.research-meta strong{display:block;font-size:12px;overflow-wrap:anywhere}
+.research-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto;padding-top:5px}
+.research-actions button{font-size:12px;padding:8px 10px}
+@media(max-width:560px){.research-filters{width:100%}.research-filters input,.research-filters select{width:100%}}
+
 /* MOBILE PHONE LAYOUT */
 @media screen and (max-width: 600px) {
 
@@ -334,6 +355,13 @@ position: relative;
     <div class="stat"><div class="num" id="totalCopies">0</div><div class="label">Total copies recorded</div></div>
     <div class="stat"><div class="num" id="availableCopies">0</div><div class="label">Copies marked available</div></div>
   </section>
+
+  <nav class="collection-nav" aria-label="Choose collection">
+    <button type="button" id="showBooks" class="active">Books</button>
+    <button type="button" id="showResearch">Research Collection</button>
+  </nav>
+
+  <div id="booksSection">
   <div class="toolbar"><h2>Browse the collection</h2><div class="filters">
     <select id="subjectFilter" aria-label="Filter by subject"><option value="">All subjects</option></select>
     <select id="statusFilter" aria-label="Filter by availability"><option value="">All availability</option><option>Available</option><option>For Library Use Only</option><option>On Loan</option><option>Under Processing</option></select>
@@ -341,6 +369,55 @@ position: relative;
   </div></div>
   <div class="resultsline" id="resultsLine" aria-live="polite">Loading catalog…</div>
   <section class="grid" id="catalog" aria-label="Catalog results"></section>
+
+  </div>
+  <section id="researchSection" class="hidden" aria-label="Research collection">
+    <div class="research-toolbar">
+      <h2>Research Collection</h2>
+      <div class="research-filters">
+        <input id="researchSearch" type="search" placeholder="Search research title, author, or subject..." aria-label="Search research">
+        <select id="researchTypeFilter" aria-label="Filter research type">
+          <option value="">All Research</option>
+          <option value="Student Research">Student Research</option>
+          <option value="Teacher Research">Teacher Research</option>
+        </select>
+      </div>
+    </div>
+    <div class="resultsline" id="researchResultsLine" aria-live="polite">Loading research collection…</div>
+    <section class="grid" id="researchCatalog" aria-label="Research results"></section>
+
+    <div class="research-admin hidden" id="researchAdmin">
+      <h3 id="researchFormHeading">Manage Research Records</h3>
+      <p class="small">Only the signed-in authorized librarian can add, edit, or delete research records.</p>
+      <div class="adminactions">
+        <button class="green" type="button" id="addResearchButton">＋ Add research record</button>
+      </div>
+      <form id="researchForm">
+        <input type="hidden" id="researchId">
+        <div class="formgrid">
+          <div class="field">
+            <label for="researchType">Research type *</label>
+            <select id="researchType" required>
+              <option value="Student Research">Student Research</option>
+              <option value="Teacher Research">Teacher Research</option>
+            </select>
+          </div>
+          <div class="field wide"><label for="researchTitle">Research title *</label><input id="researchTitle" required></div>
+          <div class="field wide"><label for="researchAuthors">Author(s) *</label><input id="researchAuthors" required placeholder="Names of student or teacher researchers"></div>
+          <div class="field"><label for="researchGradeSection">Grade &amp; Section</label><input id="researchGradeSection" placeholder="e.g. Grade 12 – STEM"></div>
+          <div class="field"><label for="researchAdviser">Research adviser</label><input id="researchAdviser"></div>
+          <div class="field"><label for="researchDepartment">School / Department</label><input id="researchDepartment"></div>
+          <div class="field"><label for="researchYear">Year</label><input id="researchYear" type="number" min="1900" max="2100" placeholder="2026"></div>
+          <div class="field"><label for="researchSubject">Subject / Research area *</label><input id="researchSubject" required placeholder="e.g. Mathematics"></div>
+        </div>
+        <div class="adminactions">
+          <button class="green" type="submit" id="saveResearchButton">Save research record</button>
+          <button class="outline" type="button" id="cancelResearchEdit">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
   <details class="admin">
     <summary>Library staff tools — manage inventory</summary>
     <p>Sign in with the authorized librarian account to manage the shared catalog. Visitors can search and view records without signing in.</p>
@@ -398,6 +475,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const SUPABASE_URL = 'https://bhlysjspbrgbuifvmdub.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_0ufXM5ft2tUL0GSpu2eMxw_Ex7r_dSG';
 const TABLE = 'books';
+const RESEARCH_TABLE = 'research';
 const LIBRARIAN_TABLE = 'librarian_access';
 
 /* Adjust only these values if your SQL table uses different column names.
@@ -409,7 +487,7 @@ const DB_COLUMNS = {
   status:'availability', shelf:'shelf_location', notes:'notes'
 };
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-let books = [], currentUser = null, isLibrarian = false, busy = false;
+let books = [], researchRecords = [], currentUser = null, isLibrarian = false, busy = false;
 const fields = ['title','author','subject','publisher','year','isbn','pages','ddc','accession','copies','status','shelf','notes'];
 const csvColumns = ['id',...fields];
 
@@ -512,6 +590,133 @@ document.getElementById('importCsv').addEventListener('change',async e=>{
   await loadBooks();alert(`Imported ${imported.length} records.`);
  }catch(err){alert('CSV import stopped: '+err.message+'\\nSome earlier rows may already have been saved. Export a backup and review the catalog.')}finally{e.target.value=''}
 });
+
+/* Research collection: stored separately from the books table. */
+const researchFields = ['research_type','title','authors','grade_section','research_adviser','school_department','research_year','subject_area'];
+
+async function loadResearch(){
+  const line = document.getElementById('researchResultsLine');
+  line.textContent = 'Loading research collection…';
+  const {data,error} = await supabase.from(RESEARCH_TABLE).select('*').order('title',{ascending:true});
+  if(error){
+    researchRecords = [];
+    renderResearch();
+    line.textContent = 'Research collection is not available yet: ' + error.message + '. Create the research table and its access policies in Supabase first.';
+    return;
+  }
+  researchRecords = data || [];
+  renderResearch();
+}
+
+function renderResearch(){
+  const query = document.getElementById('researchSearch').value.trim().toLowerCase();
+  const type = document.getElementById('researchTypeFilter').value;
+  const list = researchRecords.filter(r=>{
+    const hay = [r.title,r.authors,r.grade_section,r.research_adviser,r.school_department,r.research_year,r.subject_area,r.research_type].join(' ').toLowerCase();
+    return (!query || hay.includes(query)) && (!type || r.research_type === type);
+  });
+  document.getElementById('researchResultsLine').textContent = `Showing ${list.length} of ${researchRecords.length} research records`;
+  const root = document.getElementById('researchCatalog');
+  if(!list.length){
+    root.innerHTML = '<div class="empty"><strong>No research records found.</strong><br>Try another search or choose a different research filter.</div>';
+    return;
+  }
+  root.innerHTML = list.map(r=>`<article class="research-card">
+    <span class="research-type-tag">${esc(r.research_type || 'Research')}</span>
+    <h3>${esc(r.title)}</h3>
+    <div class="author">by ${esc(r.authors || 'Author not recorded')}</div>
+    <div class="research-meta">
+      <div><small>Year</small><strong>${esc(r.research_year || 'Not recorded')}</strong></div>
+      <div><small>Subject / Research area</small><strong>${esc(r.subject_area || 'Not recorded')}</strong></div>
+      ${r.grade_section ? `<div><small>Grade &amp; Section</small><strong>${esc(r.grade_section)}</strong></div>` : ''}
+      ${r.research_adviser ? `<div><small>Research adviser</small><strong>${esc(r.research_adviser)}</strong></div>` : ''}
+      ${r.school_department ? `<div><small>School / Department</small><strong>${esc(r.school_department)}</strong></div>` : ''}
+    </div>
+    ${isLibrarian ? `<div class="research-actions"><button class="outline" onclick="editResearch(${Number(r.id)})">Edit</button><button class="danger" onclick="deleteResearch(${Number(r.id)})">Delete</button></div>` : ''}
+  </article>`).join('');
+}
+
+function resetResearchForm(){
+  document.getElementById('researchForm').reset();
+  document.getElementById('researchId').value = '';
+  document.getElementById('researchFormHeading').textContent = 'Manage Research Records';
+  document.getElementById('saveResearchButton').textContent = 'Save research record';
+}
+function editResearch(id){
+  if(!isLibrarian)return;
+  const r = researchRecords.find(x=>Number(x.id)===Number(id));
+  if(!r)return;
+  document.getElementById('researchId').value = r.id;
+  document.getElementById('researchType').value = r.research_type || 'Student Research';
+  document.getElementById('researchTitle').value = r.title || '';
+  document.getElementById('researchAuthors').value = r.authors || '';
+  document.getElementById('researchGradeSection').value = r.grade_section || '';
+  document.getElementById('researchAdviser').value = r.research_adviser || '';
+  document.getElementById('researchDepartment').value = r.school_department || '';
+  document.getElementById('researchYear').value = r.research_year || '';
+  document.getElementById('researchSubject').value = r.subject_area || '';
+  document.getElementById('researchFormHeading').textContent = 'Edit research record';
+  document.getElementById('saveResearchButton').textContent = 'Update research record';
+  document.getElementById('researchAdmin').classList.remove('hidden');
+  document.getElementById('researchAdmin').scrollIntoView({behavior:'smooth',block:'start'});
+}
+async function deleteResearch(id){
+  if(!isLibrarian || !confirm('Delete this research record? This cannot be undone here.'))return;
+  const {error} = await supabase.from(RESEARCH_TABLE).delete().eq('id',id);
+  if(error){alert('Could not delete research record: '+error.message);return;}
+  await loadResearch();
+}
+window.editResearch = editResearch;
+window.deleteResearch = deleteResearch;
+
+document.getElementById('researchForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!isLibrarian)return;
+  const id = document.getElementById('researchId').value;
+  const yearValue = document.getElementById('researchYear').value.trim();
+  const payload = {
+    research_type: document.getElementById('researchType').value,
+    title: document.getElementById('researchTitle').value.trim(),
+    authors: document.getElementById('researchAuthors').value.trim(),
+    grade_section: document.getElementById('researchGradeSection').value.trim() || null,
+    research_adviser: document.getElementById('researchAdviser').value.trim() || null,
+    school_department: document.getElementById('researchDepartment').value.trim() || null,
+    research_year: yearValue ? Number(yearValue) : null,
+    subject_area: document.getElementById('researchSubject').value.trim()
+  };
+  const result = id
+    ? await supabase.from(RESEARCH_TABLE).update(payload).eq('id',id)
+    : await supabase.from(RESEARCH_TABLE).insert(payload);
+  if(result.error){alert('Could not save research record: '+result.error.message);return;}
+  resetResearchForm();
+  await loadResearch();
+  alert('Research record saved.');
+});
+
+document.getElementById('addResearchButton').addEventListener('click',()=>{
+  if(!isLibrarian)return;
+  resetResearchForm();
+  document.getElementById('researchAdmin').classList.remove('hidden');
+  document.getElementById('researchForm').scrollIntoView({behavior:'smooth',block:'start'});
+});
+document.getElementById('cancelResearchEdit').addEventListener('click',resetResearchForm);
+document.getElementById('researchSearch').addEventListener('input',renderResearch);
+document.getElementById('researchTypeFilter').addEventListener('change',renderResearch);
+
+document.getElementById('showBooks').addEventListener('click',()=>{
+  document.getElementById('booksSection').classList.remove('hidden');
+  document.getElementById('researchSection').classList.add('hidden');
+  document.getElementById('showBooks').classList.add('active');
+  document.getElementById('showResearch').classList.remove('active');
+});
+document.getElementById('showResearch').addEventListener('click',()=>{
+  document.getElementById('booksSection').classList.add('hidden');
+  document.getElementById('researchSection').classList.remove('hidden');
+  document.getElementById('showResearch').classList.add('active');
+  document.getElementById('showBooks').classList.remove('active');
+  loadResearch();
+});
+
 document.getElementById('signIn').onclick=async()=>{
  const email=document.getElementById('loginEmail').value.trim(),password=document.getElementById('loginPassword').value;
  if(!email||!password){setAuthMessage('Enter your librarian email and password.');return}
@@ -537,6 +742,7 @@ function updateAuthUI(){
  document.getElementById('addBook').disabled=!isLibrarian;
  document.getElementById('exportCsv').disabled=!isLibrarian;
  document.getElementById('importCsv').disabled=!isLibrarian;
+ document.getElementById('researchAdmin').classList.toggle('hidden',!isLibrarian);
 }
 supabase.auth.onAuthStateChange(()=>{setTimeout(()=>checkSession(),0)});
 updateAuthUI();
